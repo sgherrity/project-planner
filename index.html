@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weeks Calendar</title>
+<style>
+:root{
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --border:#e2e6ee;
+  --text:#1a2233;
+  --text-soft:#5b6478;
+  --text-faint:#93a0b4;
+  --accent:#2563eb;
+  --accent-soft:#dbe6ff;
+  --accent-deep:#1d4ed8;
+  --end:#059669;
+  --end-soft:#d3f5e6;
+  --range:#eef2ff;
+  --range-border:#c7d5fb;
+  --today-ring:#f59e0b;
+  --shadow:0 2px 10px rgba(20,30,60,0.06),0 1px 2px rgba(20,30,60,0.05);
+  --radius:14px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:28px 16px 60px;
+}
+.container{max-width:760px;margin:0 auto;}
+header{text-align:center;margin-bottom:22px;}
+h1{
+  font-size:26px;
+  font-weight:700;
+  margin:0;
+  letter-spacing:-0.01em;
+}
+header .sub{
+  color:var(--text-soft);
+  font-size:14px;
+  margin-top:4px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:22px 24px;
+  margin-bottom:20px;
+}
+.control-row{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.field{flex:1;min-width:160px;}
+label{
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-soft);
+  margin-bottom:6px;
+}
+input[type="date"], input[type="number"]{
+  width:100%;
+  font-family:inherit;
+  font-size:16px;
+  color:var(--text);
+  background:#fbfcfe;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+}
+input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+.result{
+  margin-top:20px;
+  text-align:center;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+.result-label{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--text-soft);
+}
+.result-date{
+  font-size:clamp(26px,5vw,36px);
+  font-weight:700;
+  color:var(--end);
+  margin-top:4px;
+  letter-spacing:-0.01em;
+}
+.result-sub{
+  font-size:13px;
+  color:var(--text-faint);
+  margin-top:4px;
+}
+.jump-row{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:16px;
+}
+.btn-ghost{
+  font-family:inherit;
+  font-size:13px;
+  font-weight:600;
+  color:var(--accent-deep);
+  background:var(--accent-soft);
+  border:1px solid var(--range-border);
+  border-radius:8px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+.btn-ghost:hover{background:#cddcff;}
+.cal-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.nav-arrow{
+  width:34px;height:34px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#fbfcfe;
+  color:var(--text-soft);
+  font-size:18px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-arrow:hover{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--range-border);}
+.cal-nav-center{display:flex;gap:8px;}
+select{
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  background:#fbfcfe;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+}
+select:focus{outline:none;border-color:var(--accent);}
+.cal-weekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  color:var(--text-faint);
+  letter-spacing:0.04em;
+  margin-bottom:6px;
+}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  grid-auto-rows:44px;
+  gap:4px;
+}
+.cal-cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  font-size:14px;
+  color:var(--text);
+  position:relative;
+}
+.cal-cell.empty{visibility:hidden;}
+.cal-cell.in-range{background:var(--range);border:1px solid var(--range-border);}
+.cal-cell.is-today{box-shadow:inset 0 0 0 2px var(--today-ring);font-weight:700;}
+.cal-cell.is-start{background:var(--accent);color:#fff;font-weight:700;border-radius:8px;}
+.cal-cell.is-end{background:var(--end);color:#fff;font-weight:700;border-radius:8px;}
+.cal-cell.is-same{background:linear-gradient(135deg,var(--accent) 50%,var(--end) 50%);color:#fff;font-weight:700;}
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  justify-content:center;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.legend-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--text-soft);
+}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;}
+.dot-start{background:var(--accent);}
+.dot-end{background:var(--end);}
+.dot-range{background:var(--range);border:1px solid var(--range-border);}
+.dot-today{background:#fff;box-shadow:inset 0 0 0 2px var(--today-ring);}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Weeks Calendar</h1>
+    <div class="sub">Pick a start date and a number of weeks to find the date</div>
+  </header>
+
+  <div class="card control-card">
+    <div class="control-row">
+      <div class="field">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="field">
+        <label for="weeksInput">Weeks</label>
+        <input type="number" id="weeksInput" min="0" step="1" value="4">
+      </div>
+    </div>
+    <div class="result">
+      <div class="result-label">Date after <span id="weeksLabel">4</span> week<span id="weeksPlural">s</span></div>
+      <div class="result-date" id="resultDate">—</div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+    <div class="jump-row">
+      <button class="btn-ghost" id="jumpStartBtn">Jump to Start</button>
+      <button class="btn-ghost" id="jumpEndBtn">Jump to Result</button>
+    </div>
+  </div>
+
+  <div class="card calendar-card">
+    <div class="cal-nav">
+      <button class="nav-arrow" id="prevMonth">&#8249;</button>
+      <div class="cal-nav-center">
+        <select id="monthSelect"></select>
+        <select id="yearSelect"></select>
+      </div>
+      <button class="nav-arrow" id="nextMonth">&#8250;</button>
+    </div>
+    <div class="cal-weekdays">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="legend">
+      <span class="legend-item"><span class="dot dot-start"></span> Start date</span>
+      <span class="legend-item"><span class="dot dot-end"></span> Result date</span>
+      <span class="legend-item"><span class="dot dot-range"></span> In range</span>
+      <span class="legend-item"><span class="dot dot-today"></span> Today</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const WEEKDAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function pad(n){ return n < 10 ? "0"+n : ""+n; }
+
+function todayLocal(){
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function isoFromDate(d){
+  return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+}
+
+function dateFromIso(str){
+  const parts = str.split("-").map(Number);
+  return new Date(parts[0], parts[1]-1, parts[2]);
+}
+
+function addDays(d, n){
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+
+function sameDate(a, b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function formatBig(d){
+  return WEEKDAY_NAMES[d.getDay()] + ", " + MONTH_NAMES[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+}
+
+// ── State ──
+const startInput = document.getElementById("startDate");
+const weeksInput = document.getElementById("weeksInput");
+const resultDateEl = document.getElementById("resultDate");
+const resultSubEl = document.getElementById("resultSub");
+const weeksLabel = document.getElementById("weeksLabel");
+const weeksPlural = document.getElementById("weeksPlural");
+const monthSelect = document.getElementById("monthSelect");
+const yearSelect = document.getElementById("yearSelect");
+const calGrid = document.getElementById("calGrid");
+const prevBtn = document.getElementById("prevMonth");
+const nextBtn = document.getElementById("nextMonth");
+const jumpStartBtn = document.getElementById("jumpStartBtn");
+const jumpEndBtn = document.getElementById("jumpEndBtn");
+
+const YEAR_MIN_DEFAULT = 2024;
+const YEAR_MAX_DEFAULT = 2034;
+
+let viewYear, viewMonth; // calendar currently displayed
+let startDate, endDate;
+
+function getStartDate(){
+  if (startInput.value) return dateFromIso(startInput.value);
+  return todayLocal();
+}
+
+function getWeeks(){
+  let v = parseInt(weeksInput.value, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  return v;
+}
+
+function computeResult(){
+  startDate = getStartDate();
+  const weeks = getWeeks();
+  endDate = addDays(startDate, weeks*7);
+
+  weeksLabel.textContent = weeks;
+  weeksPlural.textContent = weeks === 1 ? "" : "s";
+  resultDateEl.textContent = formatBig(endDate);
+  const dayCount = weeks*7;
+  resultSubEl.textContent = "Starting " + formatBig(startDate) + " · +" + dayCount + " day" + (dayCount===1?"":"s");
+}
+
+function populateSelectors(){
+  monthSelect.innerHTML = "";
+  MONTH_NAMES.forEach((m, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = m;
+    monthSelect.appendChild(opt);
+  });
+
+  let minYear = YEAR_MIN_DEFAULT;
+  let maxYear = YEAR_MAX_DEFAULT;
+  if (startDate.getFullYear() < minYear) minYear = startDate.getFullYear();
+  if (endDate.getFullYear() < minYear) minYear = endDate.getFullYear();
+  if (startDate.getFullYear() > maxYear) maxYear = startDate.getFullYear();
+  if (endDate.getFullYear() > maxYear) maxYear = endDate.getFullYear();
+
+  yearSelect.innerHTML = "";
+  for (let y = minYear; y <= maxYear; y++){
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+}
+
+function renderCalendar(){
+  populateSelectors();
+  monthSelect.value = viewMonth;
+  yearSelect.value = viewYear;
+
+  calGrid.innerHTML = "";
+  const first = new Date(viewYear, viewMonth, 1);
+  const startWeekday = first.getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const today = todayLocal();
+
+  for (let i = 0; i < startWeekday; i++){
+    const cell = document.createElement("div");
+    cell.className = "cal-cell empty";
+    calGrid.appendChild(cell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++){
+    const cellDate = new Date(viewYear, viewMonth, day);
+    const cell = document.createElement("div");
+    let classes = ["cal-cell"];
+
+    const isStart = sameDate(cellDate, startDate);
+    const isEnd = sameDate(cellDate, endDate);
+    const inRange = cellDate > startDate && cellDate < endDate;
+    const isToday = sameDate(cellDate, today);
+
+    if (isStart && isEnd) classes.push("is-same");
+    else if (isStart) classes.push("is-start");
+    else if (isEnd) classes.push("is-end");
+    else if (inRange) classes.push("in-range");
+
+    if (isToday) classes.push("is-today");
+
+    cell.className = classes.join(" ");
+    cell.textContent = day;
+    calGrid.appendChild(cell);
+  }
+}
+
+function refresh(){
+  computeResult();
+  renderCalendar();
+}
+
+function jumpTo(date){
+  viewYear = date.getFullYear();
+  viewMonth = date.getMonth();
+  renderCalendar();
+}
+
+// ── Events ──
+startInput.addEventListener("input", refresh);
+weeksInput.addEventListener("input", refresh);
+
+monthSelect.addEventListener("change", () => {
+  viewMonth = parseInt(monthSelect.value, 10);
+  renderCalendar();
+});
+yearSelect.addEventListener("change", () => {
+  viewYear = parseInt(yearSelect.value, 10);
+  renderCalendar();
+});
+
+prevBtn.addEventListener("click", () => {
+  viewMonth--;
+  if (viewMonth < 0){ viewMonth = 11; viewYear--; }
+  renderCalendar();
+});
+nextBtn.addEventListener("click", () => {
+  viewMonth++;
+  if (viewMonth > 11){ viewMonth = 0; viewYear++; }
+  renderCalendar();
+});
+
+jumpStartBtn.addEventListener("click", () => jumpTo(startDate));
+jumpEndBtn.addEventListener("click", () => jumpTo(endDate));
+
+// ── Init ──
+(function init(){
+  const t = todayLocal();
+  startInput.value = isoFromDate(t);
+  computeResult();
+  viewYear = startDate.getFullYear();
+  viewMonth = startDate.getMonth();
+  renderCalendar();
+})();
+</script>
+</body>
+</html>
